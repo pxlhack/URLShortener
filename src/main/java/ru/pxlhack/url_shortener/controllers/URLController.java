@@ -19,7 +19,7 @@ public class URLController {
 
     @PostMapping
     public ResponseEntity<?> getShortURL(@RequestBody URLRequest urlRequest) {
-        return urlService.createNewShortURL(urlRequest);
+        return urlService.createShortURL(urlRequest);
     }
 
 }

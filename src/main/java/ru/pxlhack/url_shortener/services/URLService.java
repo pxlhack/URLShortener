@@ -6,7 +6,7 @@ import ru.pxlhack.url_shortener.dto.URLRequest;
 
 @Service
 public class URLService {
-    public ResponseEntity<?> createNewShortURL(URLRequest urlRequest) {
+    public ResponseEntity<?> createShortURL(URLRequest urlRequest) {
         return null;
     }
 }
