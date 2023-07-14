@@ -11,7 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UrlMapping {
+public class URLMapping {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
