@@ -17,6 +17,9 @@ public class URLMapping {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "long_URL")
+    private String longURL;
+
     @Column(name = "token")
     private String token;
 
