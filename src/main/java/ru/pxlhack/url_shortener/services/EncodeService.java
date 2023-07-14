@@ -18,10 +18,13 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class URLService {
+public class EncodeService {
 
     @Value("${token.lifetime}")
     private int lifetime;
+
+    @Value("${base_url}")
+    private String baseUrl;
 
     private final URLMappingRepository urlMappingRepository;
 
@@ -47,7 +50,7 @@ public class URLService {
     }
 
     private String getShortURLFromToken(String token) {
-        return "http://localhost:8080/" + token;
+        return baseUrl + token;
     }
 
     @Transactional
