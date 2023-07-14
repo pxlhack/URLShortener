@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class URLRequest {
+public class URLDTO {
     @NotEmpty
     private String url;
 }
