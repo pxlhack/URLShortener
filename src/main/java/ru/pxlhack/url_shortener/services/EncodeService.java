@@ -10,10 +10,11 @@ import ru.pxlhack.url_shortener.dto.URLResponse;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 
-import java.time.ZonedDateTime;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +27,30 @@ public class EncodeService {
     @Value("${base_url}")
     private String baseUrl;
 
+    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int LENGTH = 8;
+
     private final URLMappingRepository urlMappingRepository;
 
     @Transactional
-    public URLResponse getShortURL(URLDTO URLDTO) {
+    public URLResponse getShortURL(URLDTO urlDto) {
 
-        String url = URLDTO.getUrl();
+        String url = urlDto.getUrl();
 
         Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(url);
 
         if (urlMappingOptional.isPresent()) {
-            String shortURL = getShortURLFromToken(urlMappingOptional.get().getToken());
+            URLMapping urlMapping = urlMappingOptional.get();
+            if (urlMapping.isExpired()) {
+                String updatedToken = updateToken(urlMapping);
+
+                return URLResponse.builder()
+                        .status(HttpStatus.CREATED.value())
+                        .urldto(new URLDTO(getShortURLFromToken(updatedToken)))
+                        .build();
+
+            }
+            String shortURL = getShortURLFromToken(urlMapping.getToken());
             return URLResponse.builder()
                     .status(HttpStatus.OK.value())
                     .urldto(new URLDTO(shortURL))
@@ -49,38 +63,42 @@ public class EncodeService {
                 .build();
     }
 
+    @Transactional
+    public String updateToken(URLMapping urlMapping) {
+        urlMapping.setToken(getUniqueToken());
+        urlMapping.setCreatedAt(Date.from(Instant.now()));
+        urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
+        urlMappingRepository.save(urlMapping);
+
+        return urlMapping.getToken();
+    }
+
     private String getShortURLFromToken(String token) {
         return baseUrl + token;
     }
 
     @Transactional
     public String createShortURL(String url) {
-
-
         URLMapping urlMapping = new URLMapping();
         urlMapping.setLongURL(url);
         urlMapping.setToken(getUniqueToken());
-        urlMapping.setCreatedAt(new Date());
-        urlMapping.setExpiredAt(Date.from(ZonedDateTime.now().plusMinutes(lifetime).toInstant()));
+        urlMapping.setCreatedAt(Date.from(Instant.now()));
+        urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
 
         urlMappingRepository.save(urlMapping);
 
         return getShortURLFromToken(urlMapping.getToken());
     }
 
+
     public String getUniqueToken() {
-        String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        int LENGTH = 6;
         StringBuilder sb = new StringBuilder();
-
-        do {
-            Random random = new Random();
-            for (int i = 0; i < LENGTH; i++) {
-                int index = random.nextInt(CHARACTERS.length());
-                sb.append(CHARACTERS.charAt(index));
-            }
-        } while (urlMappingRepository.findByToken(sb.toString()).isPresent());
-
+        byte[] bytes = new byte[LENGTH];
+        new SecureRandom().nextBytes(bytes);
+        for (byte b : bytes) {
+            int index = Math.floorMod(b, CHARACTERS.length());
+            sb.append(CHARACTERS.charAt(index));
+        }
         return sb.toString();
     }
 

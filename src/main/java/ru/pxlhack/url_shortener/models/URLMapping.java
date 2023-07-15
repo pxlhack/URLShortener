@@ -20,7 +20,7 @@ public class URLMapping {
     @Column(name = "long_URL")
     private String longURL;
 
-    @Column(name = "token")
+    @Column(name = "token", unique = true)
     private String token;
 
     @Column(name = "created_at")
