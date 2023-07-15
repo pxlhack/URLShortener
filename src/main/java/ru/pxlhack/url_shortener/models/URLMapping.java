@@ -30,4 +30,8 @@ public class URLMapping {
     @Column(name = "expired_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date expiredAt;
+
+    public boolean isExpired() {
+        return expiredAt.before(new Date());
+    }
 }
