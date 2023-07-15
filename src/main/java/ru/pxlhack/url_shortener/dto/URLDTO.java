@@ -1,6 +1,7 @@
 package ru.pxlhack.url_shortener.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,5 +14,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class URLDTO {
     @NotEmpty
-    private String url;
+    @JsonProperty(value = "url")
+    private String longUrl;
 }

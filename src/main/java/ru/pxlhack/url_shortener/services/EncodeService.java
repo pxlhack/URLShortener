@@ -23,19 +23,17 @@ public class EncodeService {
 
     @Value("${token.lifetime}")
     private int lifetime;
-
     @Value("${base_url}")
     private String baseUrl;
-
 
     private final URLMappingRepository urlMappingRepository;
 
     @Transactional
     public URLResponse getShortURL(URLDTO urlDto) {
 
-        String url = urlDto.getUrl();
+        String longUrl = urlDto.getLongUrl();
 
-        Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(url);
+        Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(longUrl);
 
         if (urlMappingOptional.isPresent()) {
             URLMapping urlMapping = urlMappingOptional.get();
@@ -57,7 +55,7 @@ public class EncodeService {
 
         return URLResponse.builder()
                 .status(HttpStatus.CREATED.value())
-                .urldto(new URLDTO(createShortURL(url)))
+                .urldto(new URLDTO(createShortURL(longUrl)))
                 .build();
     }
 

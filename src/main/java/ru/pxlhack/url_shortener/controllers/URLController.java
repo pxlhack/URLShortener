@@ -42,5 +42,4 @@ public class URLController {
         return redirectView;
     }
 
-
 }

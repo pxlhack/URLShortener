@@ -1,5 +1,6 @@
 package ru.pxlhack.url_shortener.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -9,5 +10,6 @@ import lombok.*;
 @Builder
 public class URLResponse {
     private int status;
+    @JsonProperty(value = "data")
     private URLDTO urldto;
 }
