@@ -9,8 +9,8 @@ import ru.pxlhack.url_shortener.dto.URLDTO;
 import ru.pxlhack.url_shortener.dto.URLResponse;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
+import ru.pxlhack.url_shortener.util.TokenGenerator;
 
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -27,8 +27,6 @@ public class EncodeService {
     @Value("${base_url}")
     private String baseUrl;
 
-    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
-    private static final int LENGTH = 8;
 
     private final URLMappingRepository urlMappingRepository;
 
@@ -65,7 +63,7 @@ public class EncodeService {
 
     @Transactional
     public String updateToken(URLMapping urlMapping) {
-        urlMapping.setToken(getUniqueToken());
+        urlMapping.setToken(TokenGenerator.generateToken());
         urlMapping.setCreatedAt(Date.from(Instant.now()));
         urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
         urlMappingRepository.save(urlMapping);
@@ -81,25 +79,13 @@ public class EncodeService {
     public String createShortURL(String url) {
         URLMapping urlMapping = new URLMapping();
         urlMapping.setLongURL(url);
-        urlMapping.setToken(getUniqueToken());
+        urlMapping.setToken(TokenGenerator.generateToken());
         urlMapping.setCreatedAt(Date.from(Instant.now()));
         urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
 
         urlMappingRepository.save(urlMapping);
 
         return getShortURLFromToken(urlMapping.getToken());
-    }
-
-
-    public String getUniqueToken() {
-        StringBuilder sb = new StringBuilder();
-        byte[] bytes = new byte[LENGTH];
-        new SecureRandom().nextBytes(bytes);
-        for (byte b : bytes) {
-            int index = Math.floorMod(b, CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
-        }
-        return sb.toString();
     }
 
 }
