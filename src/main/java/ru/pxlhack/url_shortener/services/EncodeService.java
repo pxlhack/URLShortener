@@ -35,29 +35,32 @@ public class EncodeService {
 
         Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(longUrl);
 
-        if (urlMappingOptional.isPresent()) {
-            URLMapping urlMapping = urlMappingOptional.get();
-            if (urlMapping.isExpired()) {
-                String updatedToken = updateToken(urlMapping);
-
-                return URLResponse.builder()
-                        .status(HttpStatus.CREATED.value())
-                        .urldto(new URLDTO(getShortURLFromToken(updatedToken)))
-                        .build();
-
-            }
-            String shortURL = getShortURLFromToken(urlMapping.getToken());
+        if (urlMappingOptional.isEmpty()) {
             return URLResponse.builder()
-                    .status(HttpStatus.OK.value())
-                    .urldto(new URLDTO(shortURL))
+                    .status(HttpStatus.CREATED.value())
+                    .urldto(new URLDTO(createShortURL(longUrl)))
                     .build();
         }
 
+        URLMapping urlMapping = urlMappingOptional.get();
+
+        if (urlMapping.isExpired()) {
+            String updatedToken = updateToken(urlMapping);
+
+            return URLResponse.builder()
+                    .status(HttpStatus.CREATED.value())
+                    .urldto(new URLDTO(getShortURLFromToken(updatedToken)))
+                    .build();
+
+        }
+
+        String shortURL = getShortURLFromToken(urlMapping.getToken());
         return URLResponse.builder()
-                .status(HttpStatus.CREATED.value())
-                .urldto(new URLDTO(createShortURL(longUrl)))
+                .status(HttpStatus.OK.value())
+                .urldto(new URLDTO(shortURL))
                 .build();
     }
+
 
     @Transactional
     public String updateToken(URLMapping urlMapping) {
