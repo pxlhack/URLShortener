@@ -23,17 +23,14 @@ public class DecodeService {
      * @return the long URL associated with the token
      * @throws IllegalArgumentException if the token is null or empty
      * @throws NoSuchElementException   if the token is not found
-     * @throws TokenExpiredException     if the token has expired
+     * @throws TokenExpiredException    if the token has expired
      */
     public String getLongURL(String token) {
         if (token == null || token.isEmpty())
             throw new IllegalArgumentException("Invalid token: " + token);
 
-
-        Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByToken(token);
-
-        URLMapping urlMapping = urlMappingOptional.orElseThrow(() -> new NoSuchElementException("Unknown token: " + token));
-
+        URLMapping urlMapping = urlMappingRepository.findByToken(token)
+                .orElseThrow(() -> new NoSuchElementException("Unknown token: " + token));
 
         if (urlMapping.isExpired())
             throw new TokenExpiredException("Token has expired");
