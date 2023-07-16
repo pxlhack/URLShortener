@@ -7,11 +7,10 @@ import org.mockito.MockitoAnnotations;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class DecodeServiceTest {
@@ -48,5 +47,27 @@ class DecodeServiceTest {
         assertEquals(expectedLongUrl, actualLongUrl);
 
         verify(urlMappingRepository).findByToken(token);
+    }
+
+    @Test
+    public void getLongURL_tokenIsNull_ThrowIllegalArgumentException() {
+        // Arrange
+        String token = null;
+
+        // Act and Assert
+        assertThrows(IllegalArgumentException.class, () -> decodeService.getLongURL(token));
+
+        verify(urlMappingRepository, never()).findByToken(token);
+    }
+
+    @Test
+    public void getLongURL_tokenIsEmpty_ThrowIllegalArgumentException() {
+        // Arrange
+        String token = "";
+
+        // Act and Assert
+        assertThrows(IllegalArgumentException.class, () -> decodeService.getLongURL(token));
+
+        verify(urlMappingRepository, never()).findByToken(token);
     }
 }
