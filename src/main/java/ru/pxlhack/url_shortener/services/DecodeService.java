@@ -8,7 +8,6 @@ import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +33,6 @@ public class DecodeService {
 
         if (urlMapping.isExpired())
             throw new TokenExpiredException("Token has expired");
-
 
         return urlMapping.getLongURL();
     }
