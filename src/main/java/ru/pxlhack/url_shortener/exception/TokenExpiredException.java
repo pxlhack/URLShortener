@@ -9,5 +9,4 @@ public class TokenExpiredException extends RuntimeException {
     public TokenExpiredException(String message) {
         super(message);
     }
-    // Дополнительные поля и методы, если необходимо
 }
