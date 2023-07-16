@@ -11,5 +11,5 @@ import lombok.*;
 public class URLResponse {
     private int status;
     @JsonProperty(value = "data")
-    private URLDTO urldto;
+    private URLDTO urlDto;
 }

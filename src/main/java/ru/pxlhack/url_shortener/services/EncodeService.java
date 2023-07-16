@@ -1,6 +1,5 @@
 package ru.pxlhack.url_shortener.services;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,50 +16,70 @@ import java.util.Date;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class EncodeService {
 
-    @Value("${token.lifetime}")
-    private int lifetime;
-    @Value("${base_url}")
-    private String baseUrl;
-
+    private final int lifetime;
+    private final String baseUrl;
     private final URLMappingRepository urlMappingRepository;
+
+    public EncodeService(@Value("${token.lifetime}") int lifetime,
+                         @Value("${base_url}") String baseUrl,
+                         URLMappingRepository urlMappingRepository) {
+        this.lifetime = lifetime;
+        this.baseUrl = baseUrl;
+        this.urlMappingRepository = urlMappingRepository;
+    }
+
 
     @Transactional
     public URLResponse getShortURL(URLDTO urlDto) {
-
         String longUrl = urlDto.getLongUrl();
-
         Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(longUrl);
 
         if (urlMappingOptional.isEmpty()) {
-            return URLResponse.builder()
-                    .status(HttpStatus.CREATED.value())
-                    .urldto(new URLDTO(createShortURL(longUrl)))
-                    .build();
+            URLMapping createdUrlMapping = createUrlMapping(longUrl);
+            return createdURLMappingResponse(createdUrlMapping.getToken());
         }
 
         URLMapping urlMapping = urlMappingOptional.get();
 
-        if (urlMapping.isExpired()) {
-            String updatedToken = updateToken(urlMapping);
+        if (urlMapping.isExpired())
+            return createdURLMappingResponse(updateToken(urlMapping));
 
-            return URLResponse.builder()
-                    .status(HttpStatus.CREATED.value())
-                    .urldto(new URLDTO(getShortURLFromToken(updatedToken)))
-                    .build();
 
-        }
+        return getShortURLResponse(urlMapping.getToken());
+    }
 
-        String shortURL = getShortURLFromToken(urlMapping.getToken());
+    private URLResponse getShortURLResponse(String token) {
+        return createURLResponse(HttpStatus.OK, getShortURLFromToken(token));
+    }
+
+    private URLResponse createdURLMappingResponse(String token) {
+        return createURLResponse(HttpStatus.CREATED, getShortURLFromToken(token));
+    }
+
+
+    @Transactional
+    public URLMapping createUrlMapping(String longUrl) {
+        URLMapping urlMapping = new URLMapping();
+        urlMapping.setLongURL(longUrl);
+        urlMapping.setToken(TokenGenerator.generateToken());
+        urlMapping.setCreatedAt(Date.from(Instant.now()));
+        urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
+
+        return urlMappingRepository.save(urlMapping);
+    }
+
+    private URLResponse createURLResponse(HttpStatus status, String url) {
         return URLResponse.builder()
-                .status(HttpStatus.OK.value())
-                .urldto(new URLDTO(shortURL))
+                .status(status.value())
+                .urlDto(new URLDTO(url))
                 .build();
     }
 
+    private String getShortURLFromToken(String token) {
+        return baseUrl + token;
+    }
 
     @Transactional
     public String updateToken(URLMapping urlMapping) {
@@ -70,23 +89,6 @@ public class EncodeService {
         urlMappingRepository.save(urlMapping);
 
         return urlMapping.getToken();
-    }
-
-    private String getShortURLFromToken(String token) {
-        return baseUrl + token;
-    }
-
-    @Transactional
-    public String createShortURL(String url) {
-        URLMapping urlMapping = new URLMapping();
-        urlMapping.setLongURL(url);
-        urlMapping.setToken(TokenGenerator.generateToken());
-        urlMapping.setCreatedAt(Date.from(Instant.now()));
-        urlMapping.setExpiredAt(Date.from(Instant.now().plus(Duration.ofMinutes(lifetime))));
-
-        urlMappingRepository.save(urlMapping);
-
-        return getShortURLFromToken(urlMapping.getToken());
     }
 
 }
