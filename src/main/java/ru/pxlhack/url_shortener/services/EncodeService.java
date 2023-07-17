@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pxlhack.url_shortener.dto.URLDTO;
 import ru.pxlhack.url_shortener.dto.URLResponse;
+import ru.pxlhack.url_shortener.exception.InvalidURLException;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 import ru.pxlhack.url_shortener.util.TokenGenerator;
+import ru.pxlhack.url_shortener.util.URLValidator;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,6 +36,9 @@ public class EncodeService {
     @Transactional
     public URLResponse getShortURL(URLDTO urlDto) {
         String longUrl = urlDto.getLongUrl();
+
+        if (!URLValidator.isValidURL(longUrl)) throw new InvalidURLException("Invalid URL: " + longUrl);
+
         Optional<URLMapping> urlMappingOptional = urlMappingRepository.findByLongURL(longUrl);
 
         if (urlMappingOptional.isEmpty()) {

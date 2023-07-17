@@ -25,4 +25,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(498).body(ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidURLException.class)
+    public ResponseEntity<String> handleTokenExpiredException(InvalidURLException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
 }

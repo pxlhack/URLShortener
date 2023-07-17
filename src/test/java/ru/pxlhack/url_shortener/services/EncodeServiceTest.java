@@ -9,15 +9,18 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import ru.pxlhack.url_shortener.dto.URLDTO;
 import ru.pxlhack.url_shortener.dto.URLResponse;
+import ru.pxlhack.url_shortener.exception.InvalidURLException;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 import ru.pxlhack.url_shortener.util.TokenGenerator;
+import ru.pxlhack.url_shortener.util.URLValidator;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -115,6 +118,18 @@ public class EncodeServiceTest {
             verify(urlMappingRepository).findByLongURL(LONG_URL);
             verify(urlMappingRepository).save(any(URLMapping.class));
         }
+    }
+
+    @Test
+    public void getShortURL_InvalidURL_ThrowInvalidURLException() {
+        // Arrange
+        String longUrl = "invalid URL";
+        URLDTO urlDto = new URLDTO(longUrl);
+
+        // Act and Assert
+        assertThrows(InvalidURLException.class, () -> encodeService.getShortURL(urlDto));
+
+        verify(urlMappingRepository, never()).findByLongURL(longUrl);
     }
 
     private Date getNotExpiredDate() {
