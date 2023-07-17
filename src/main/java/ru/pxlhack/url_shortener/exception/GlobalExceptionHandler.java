@@ -2,8 +2,11 @@ package ru.pxlhack.url_shortener.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.NoSuchElementException;
 
@@ -28,6 +31,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidURLException.class)
     public ResponseEntity<String> handleTokenExpiredException(InvalidURLException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleHttpMessageNotReadableException() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request body");
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<String> handleHttpMediaTypeNotSupportedException() {
+        return ResponseEntity
+                .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body("The requested media type is not supported. Please use a valid media type.");
     }
 
 }
