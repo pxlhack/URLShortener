@@ -2,6 +2,7 @@ package ru.pxlhack.url_shortener.controllers;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +34,11 @@ public class URLController {
     }
 
     @GetMapping("{token}")
-    public RedirectView getLongURL(@PathVariable String token) {
-
-        RedirectView redirectView = new RedirectView();
-        redirectView.setUrl(decodeService.getLongURL(token));
-
-        return redirectView;
+    public ResponseEntity<Void> getLongURL(@PathVariable String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", decodeService.getLongURL(token));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
+
 
 }
