@@ -48,3 +48,47 @@ the volumes as well, add the **--volumes** flag:
   docker-compose down -volumes
 
    ```
+
+## Endpoint Overview
+
+- `POST /short`: Create new short url
+- `GET /short/{token}`: Use a short URL to go to the original URL
+
+## Request and Response Format
+
+The API accepts and returns data in JSON format. Include the `Content-Type: application/json` header in your requests.
+
+### Example Request
+
+``` bash 
+curl --location 'localhost:8080/short' \
+--header 'Content-Type: application/json' \
+--data '{
+    "url": "https://www.youtube.com/"
+}'
+```
+
+### Example Response
+
+``` json
+{
+    "status": 200,
+    "data": {
+        "url": "http://localhost:8080/short/mioalb9w"
+    }
+}
+```
+
+### Endpoint Details
+
+- `POST /short`<br>
+  Create new short url<br>
+  *Parameters*<br>
+  None.<br>
+  <br>
+
+- `GET /short/{token}`<br>
+  Use a short URL to go to the original URL<br>
+  *Parameters*<br>
+  token (required): The token of original URL<br>
+  <br>
