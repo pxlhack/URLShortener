@@ -4,9 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import ru.pxlhack.url_shortener.exception.TokenExpiredException;
 import ru.pxlhack.url_shortener.models.URLMapping;
 import ru.pxlhack.url_shortener.repositories.URLMappingRepository;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,4 +72,28 @@ class DecodeServiceTest {
 
         verify(urlMappingRepository, never()).findByToken(token);
     }
+
+    @Test
+    public void getLongURL_tokenIsNotFound_ThrowNoSuchElementException() {
+        // Arrange
+        String token = "anytoken";
+
+        when(urlMappingRepository.findByToken(token)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(NoSuchElementException.class, () -> decodeService.getLongURL(token));
+    }
+
+    @Test
+    public void getLongURL_tokenIsExpired_ThrowTokenExpiredException () {
+        // Arrange
+        String token = "anytoken";
+
+        when(urlMappingRepository.findByToken(token)).thenReturn(Optional.of(expectedUrlMapping));
+        when(expectedUrlMapping.isExpired()).thenReturn(true);
+
+        // Act and Assert
+        assertThrows(TokenExpiredException.class, () -> decodeService.getLongURL(token));
+    }
+
 }
